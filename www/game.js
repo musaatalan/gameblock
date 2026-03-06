@@ -382,31 +382,12 @@
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
     ctx.save();
-    ctx.globalAlpha = isValid ? 0.42 : 0.30;
-    const pad = 2;
+    const displayColor = isValid ? color : '#e57373';
     shape.forEach(([dr, dc]) => {
       const x = (col + dc) * cellW + offsetX;
       const y = (row + dr) * cellH + offsetY;
-      ctx.fillStyle = isValid ? color : 'rgba(244,67,54,1)';
-      ctx.fillRect(x + pad, y + pad, cellW - pad * 2, cellH - pad * 2);
-      ctx.strokeStyle = isValid ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.55)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.strokeRect(x + pad, y + pad, cellW - pad * 2, cellH - pad * 2);
-      if (!isValid) {
-        ctx.setLineDash([]);
-        ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x + pad + 4, y + pad + 4);
-        ctx.lineTo(x + cellW - pad - 4, y + cellH - pad - 4);
-        ctx.moveTo(x + cellW - pad - 4, y + pad + 4);
-        ctx.lineTo(x + pad + 4, y + cellH - pad - 4);
-        ctx.stroke();
-        ctx.setLineDash([4, 4]);
-      }
+      drawBlockCell(ctx, x, y, cellW, cellH, displayColor);
     });
-    ctx.setLineDash([]);
     ctx.restore();
   }
 
