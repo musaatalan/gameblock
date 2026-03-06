@@ -363,7 +363,8 @@
     if (shadowCell && selectedPieceIndex !== null && currentPieces[selectedPieceIndex] && !clearingAnim && placementFlashUntil <= now) {
       const piece = currentPieces[selectedPieceIndex];
       const ok = canPlace(piece.shape, shadowCell.row, shadowCell.col);
-      drawGhostPiece(ctx, piece.shape, shadowCell.row, shadowCell.col, piece.color, cellW, cellH, ok);
+      const ghostOffsetY = -cellH * 1.1;
+      drawGhostPiece(ctx, piece.shape, shadowCell.row, shadowCell.col, piece.color, cellW, cellH, ok, 0, ghostOffsetY);
     }
   }
 
@@ -377,13 +378,15 @@
     ctx.fillRect(x + pad + (w - pad * 2) * 0.5, y + pad + (h - pad * 2) * 0.6, (w - pad * 2) * 0.5, (h - pad * 2) * 0.4);
   }
 
-  function drawGhostPiece(ctx, shape, row, col, color, cellW, cellH, isValid) {
+  function drawGhostPiece(ctx, shape, row, col, color, cellW, cellH, isValid, offsetX, offsetY) {
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
     ctx.save();
     ctx.globalAlpha = isValid ? 0.42 : 0.30;
     const pad = 2;
     shape.forEach(([dr, dc]) => {
-      const x = (col + dc) * cellW;
-      const y = (row + dr) * cellH;
+      const x = (col + dc) * cellW + offsetX;
+      const y = (row + dr) * cellH + offsetY;
       ctx.fillStyle = isValid ? color : 'rgba(244,67,54,1)';
       ctx.fillRect(x + pad, y + pad, cellW - pad * 2, cellH - pad * 2);
       ctx.strokeStyle = isValid ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.55)';
