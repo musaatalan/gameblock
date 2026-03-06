@@ -1,0 +1,21 @@
+{
+  "name": "blok-patlat",
+  "version": "1.0.0",
+  "description": "Blok Patlat - Ücretsiz blok puzzle oyunu (Android APK)",
+  "private": true,
+  "scripts": {
+    "copy-to-www": "node copy-to-www.js",
+    "cap:sync": "npm run copy-to-www && npx cap sync",
+    "cap:open": "npx cap open android",
+    "android:bundle": "npm run cap:sync && cd android && gradlew.bat bundleRelease",
+    "android:apk": "npm run cap:sync && cd android && gradlew.bat assembleRelease"
+  },
+  "capacitor": {
+    "webDir": "www"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}

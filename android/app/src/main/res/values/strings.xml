@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Blok Patlat</string>
+    <string name="title_activity_main">Blok Patlat</string>
+    <string name="package_name">com.blokpatlat.app</string>
+    <string name="custom_url_scheme">com.blokpatlat.app</string>
+</resources>
