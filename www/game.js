@@ -731,12 +731,24 @@
   });
 
   // ——— Hoş geldin ekranı ———
-  document.getElementById('accept-btn').addEventListener('click', function () {
+  var welcomeAccepted = false;
+  function goToGame() {
+    if (welcomeAccepted) return;
+    welcomeAccepted = true;
     document.getElementById('welcome-screen').classList.remove('active');
     document.getElementById('game-screen').classList.add('active');
     ensureAudio();
     startGame();
+  }
+  var acceptBtn = document.getElementById('accept-btn');
+  acceptBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    goToGame();
   });
+  acceptBtn.addEventListener('touchend', function (e) {
+    e.preventDefault();
+    goToGame();
+  }, { passive: false });
   document.getElementById('terms-link').addEventListener('click', function (e) {
     e.preventDefault();
     alert('Kullanım Koşulları sayfası bu örnekte yer almıyor.');
