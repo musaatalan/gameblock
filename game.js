@@ -363,7 +363,7 @@
     if (shadowCell && selectedPieceIndex !== null && currentPieces[selectedPieceIndex] && !clearingAnim && placementFlashUntil <= now) {
       const piece = currentPieces[selectedPieceIndex];
       const ok = canPlace(piece.shape, shadowCell.row, shadowCell.col);
-      const ghostOffsetY = -cellH * 1.1;
+      const ghostOffsetY = -cellH * 2.2;
       drawGhostPiece(ctx, piece.shape, shadowCell.row, shadowCell.col, piece.color, cellW, cellH, ok, 0, ghostOffsetY);
     }
   }
