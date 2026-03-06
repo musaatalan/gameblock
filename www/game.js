@@ -579,8 +579,26 @@
   function endDrag(clientX, clientY) {
     if (dragPieceIndex === null) return;
     const idx = dragPieceIndex;
+    const piece = currentPieces[idx];
     dragPieceIndex = null;
-    const cell = getCellFromClient(clientX, clientY);
+    if (!piece) {
+      document.querySelectorAll('.piece-btn').forEach((b, j) => b.classList.toggle('selected', false));
+      drawGrid();
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const cx = clientX - rect.left;
+    const cy = clientY - rect.top;
+    const cellW = rect.width / GRID_SIZE;
+    const cellH = rect.height / GRID_SIZE;
+    const offsetY = cellH * 2.2;
+    const rows = Math.max(...piece.shape.map(p => p[0])) + 1;
+    const cols = Math.max(...piece.shape.map(p => p[1])) + 1;
+    const left = cx - (cols * cellW) / 2;
+    const top = cy - offsetY - (rows * cellH) / 2;
+    const placeCol = Math.floor(left / cellW);
+    const placeRow = Math.floor(top / cellH);
+    const cell = (placeRow >= 0 && placeRow < GRID_SIZE && placeCol >= 0 && placeCol < GRID_SIZE) ? { row: placeRow, col: placeCol } : null;
     if (cell) {
       selectedPieceIndex = idx;
       tryPlaceSelected(cell.row, cell.col);
