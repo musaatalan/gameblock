@@ -4,6 +4,8 @@ Bu klasörde Android APK dosyası bulunur.
 
 | Dosya | Açıklama |
 |-------|----------|
-| **BlokPatlat-v1.0.1.apk** | Release APK — telefona yükleyip doğrudan oynayabilirsin. |
+| **BlokPatlat-v1.0.2.apk** | **En güncel** — sürükle-bırak ile blokları tahtaya sürükleyebilirsin. |
+| BlokPatlat-v1.0.1.apk | Eski sürüm. |
 
-İndirmek için: Repo ana sayfasında bu dosyaya tıkla → **Download** veya **Raw** (veya sağ tık → Bağlantıyı farklı kaydet).
+**İndir (v1.0.2):** [BlokPatlat-v1.0.2.apk](https://github.com/musaatalan/gameblock/raw/main/releases/BlokPatlat-v1.0.2.apk)  
+Repo’da dosyaya tıkla → **Download** veya sağ tık → Bağlantıyı farklı kaydet.
