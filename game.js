@@ -815,9 +815,17 @@
   });
 
   if (gameoverRestartBtn) {
-    gameoverRestartBtn.addEventListener('click', function () {
+    function doRestart() {
       startGame();
+    }
+    gameoverRestartBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      doRestart();
     });
+    gameoverRestartBtn.addEventListener('touchend', function (e) {
+      e.preventDefault();
+      doRestart();
+    }, { passive: false });
   }
   if (gameoverOverlay) {
     gameoverOverlay.addEventListener('click', function (e) {
