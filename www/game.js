@@ -54,6 +54,9 @@
   let placementFlashUntil = 0;
   let animId = null;
   let shadowCell = null;
+  let dragPieceIndex = null;
+  let dragClientX = 0;
+  let dragClientY = 0;
   let soundEnabled = (localStorage.getItem(SOUND_ENABLED_KEY) ?? '1') === '1';
   let audioCtx = null;
 
@@ -360,11 +363,19 @@
       ctx.fillStyle = 'rgba(255, 255, 255, ' + flashAlpha + ')';
       ctx.fillRect(0, 0, w, h);
     }
-    if (shadowCell && selectedPieceIndex !== null && currentPieces[selectedPieceIndex] && !clearingAnim && placementFlashUntil <= now) {
-      const piece = currentPieces[selectedPieceIndex];
-      const ok = canPlace(piece.shape, shadowCell.row, shadowCell.col);
-      const ghostOffsetY = -cellH * 2.2;
-      drawGhostPiece(ctx, piece.shape, shadowCell.row, shadowCell.col, piece.color, cellW, cellH, ok, 0, ghostOffsetY);
+    if (dragPieceIndex !== null && currentPieces[dragPieceIndex] && !clearingAnim && placementFlashUntil <= now) {
+      const piece = currentPieces[dragPieceIndex];
+      const rect = canvas.getBoundingClientRect();
+      const cx = (dragClientX - rect.left);
+      const cy = (dragClientY - rect.top);
+      const offsetY = cellH * 2.2;
+      const rows = Math.max(...piece.shape.map(p => p[0])) + 1;
+      const cols = Math.max(...piece.shape.map(p => p[1])) + 1;
+      const left = cx - (cols * cellW) / 2;
+      const top = cy - offsetY - (rows * cellH) / 2;
+      piece.shape.forEach(([dr, dc]) => {
+        drawBlockCell(ctx, left + dc * cellW, top + dr * cellH, cellW, cellH, piece.color);
+      });
     }
   }
 
@@ -549,6 +560,36 @@
     }
   }
 
+  function startDrag(i, clientX, clientY) {
+    if (gameOver || clearingAnim || placementFlashUntil > Date.now()) return;
+    dragPieceIndex = i;
+    dragClientX = clientX;
+    dragClientY = clientY;
+    shadowCell = null;
+    drawGrid();
+  }
+
+  function updateDrag(clientX, clientY) {
+    if (dragPieceIndex === null) return;
+    dragClientX = clientX;
+    dragClientY = clientY;
+    if (!animId) drawGrid();
+  }
+
+  function endDrag(clientX, clientY) {
+    if (dragPieceIndex === null) return;
+    const idx = dragPieceIndex;
+    dragPieceIndex = null;
+    const cell = getCellFromClient(clientX, clientY);
+    if (cell) {
+      selectedPieceIndex = idx;
+      tryPlaceSelected(cell.row, cell.col);
+    }
+    selectedPieceIndex = null;
+    document.querySelectorAll('.piece-btn').forEach((b, j) => b.classList.toggle('selected', false));
+    drawGrid();
+  }
+
   function renderPieces() {
     piecesSlot.innerHTML = '';
     currentPieces.forEach((piece, i) => {
@@ -556,26 +597,41 @@
       btn.className = 'piece-btn' + (i === selectedPieceIndex ? ' selected' : '');
       btn.type = 'button';
       btn.appendChild(renderPieceCanvas(piece.shape, piece.color, 48));
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        if (dragPieceIndex !== null) return;
         selectedPieceIndex = selectedPieceIndex === i ? null : i;
         document.querySelectorAll('.piece-btn').forEach((b, j) => b.classList.toggle('selected', j === selectedPieceIndex));
       });
+      btn.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        startDrag(i, e.clientX, e.clientY);
+      });
+      btn.addEventListener('touchstart', (e) => {
+        if (e.touches.length) startDrag(i, e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
       piecesSlot.appendChild(btn);
     });
   }
 
-  function getCellFromEvent(e) {
+  function getCellFromClient(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const t = e.touches?.[0] || e.changedTouches?.[0];
-    const x = (e.clientX ?? t?.clientX) - rect.left;
-    const y = (e.clientY ?? t?.clientY) - rect.top;
-    if (typeof x !== 'number' || typeof y !== 'number' || isNaN(x) || isNaN(y)) return null;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     const cellW = rect.width / GRID_SIZE;
     const cellH = rect.height / GRID_SIZE;
     const col = Math.floor(x / cellW);
     const row = Math.floor(y / cellH);
     if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) return { row, col };
     return null;
+  }
+
+  function getCellFromEvent(e) {
+    const t = e.touches?.[0] || e.changedTouches?.[0];
+    const x = e.clientX ?? t?.clientX;
+    const y = e.clientY ?? t?.clientY;
+    if (typeof x !== 'number' || typeof y !== 'number' || isNaN(x) || isNaN(y)) return null;
+    return getCellFromClient(x, y);
   }
 
   function handleGridClick(e) {
@@ -605,6 +661,7 @@
     clearingAnim = null;
     placementFlashUntil = 0;
     shadowCell = null;
+    dragPieceIndex = null;
     highScore = Math.max(highScore, parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0', 10));
     updateHighScoreDisplay();
     initGrid();
@@ -643,6 +700,35 @@
     }
   }, { passive: false });
   canvas.addEventListener('touchcancel', clearShadow);
+
+  document.addEventListener('mousemove', (e) => {
+    if (dragPieceIndex !== null) updateDrag(e.clientX, e.clientY);
+    else updateShadow(e);
+  });
+  document.addEventListener('mouseup', (e) => {
+    if (e.button === 0 && dragPieceIndex !== null) {
+      endDrag(e.clientX, e.clientY);
+    }
+  });
+  document.addEventListener('touchmove', (e) => {
+    if (dragPieceIndex !== null && e.touches.length) {
+      e.preventDefault();
+      updateDrag(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length) updateShadow(e);
+  }, { passive: false });
+  document.addEventListener('touchend', (e) => {
+    if (e.touches.length === 0 && dragPieceIndex !== null) {
+      const t = e.changedTouches[0];
+      if (t) endDrag(t.clientX, t.clientY);
+      else dragPieceIndex = null;
+    } else if (e.touches.length === 0) {
+      clearShadow();
+      handleGridClick(e);
+    }
+  }, { passive: false });
+  document.addEventListener('touchcancel', (e) => {
+    if (e.touches.length === 0) dragPieceIndex = null;
+  });
 
   // ——— Hoş geldin ekranı ———
   document.getElementById('accept-btn').addEventListener('click', function () {
