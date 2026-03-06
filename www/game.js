@@ -371,8 +371,10 @@
       const offsetY = cellH * 2.2;
       const rows = Math.max(...piece.shape.map(p => p[0])) + 1;
       const cols = Math.max(...piece.shape.map(p => p[1])) + 1;
-      const left = cx - (cols * cellW) / 2;
-      const top = cy - offsetY - (rows * cellH) / 2;
+      let left = cx - (cols * cellW) / 2;
+      let top = cy - offsetY - (rows * cellH) / 2;
+      left = Math.round(left / cellW) * cellW;
+      top = Math.round(top / cellH) * cellH;
       piece.shape.forEach(([dr, dc]) => {
         drawBlockCell(ctx, left + dc * cellW, top + dr * cellH, cellW, cellH, piece.color);
       });
@@ -594,10 +596,14 @@
     const offsetY = cellH * 2.2;
     const rows = Math.max(...piece.shape.map(p => p[0])) + 1;
     const cols = Math.max(...piece.shape.map(p => p[1])) + 1;
-    const left = cx - (cols * cellW) / 2;
-    const top = cy - offsetY - (rows * cellH) / 2;
-    const placeCol = Math.floor(left / cellW);
-    const placeRow = Math.floor(top / cellH);
+    let left = cx - (cols * cellW) / 2;
+    let top = cy - offsetY - (rows * cellH) / 2;
+    left = Math.round(left / cellW) * cellW;
+    top = Math.round(top / cellH) * cellH;
+    let placeCol = Math.round(left / cellW);
+    let placeRow = Math.round(top / cellH);
+    placeCol = Math.max(0, Math.min(GRID_SIZE - cols, placeCol));
+    placeRow = Math.max(0, Math.min(GRID_SIZE - rows, placeRow));
     const cell = (placeRow >= 0 && placeRow < GRID_SIZE && placeCol >= 0 && placeCol < GRID_SIZE) ? { row: placeRow, col: placeCol } : null;
     if (cell) {
       selectedPieceIndex = idx;
